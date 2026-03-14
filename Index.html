@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bluemoon Nexus Launcher</title>
+  <style>
+    :root{
+      --bg:#08111f;
+      --bg2:#0d172b;
+      --panel:#13213a;
+      --panel2:#1a2b48;
+      --line:#304b7a;
+      --text:#e9f1ff;
+      --muted:#9db2d9;
+      --accent:#69c6ff;
+      --accent2:#8dddff;
+      --good:#79e4a0;
+      --warn:#ffd166;
+      --danger:#ff7b8d;
+      --shadow:0 24px 70px rgba(0,0,0,.42);
+      --window-w:1320px;
+      --window-h:90vh;
+      --radius:28px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      font-family:Arial,Helvetica,sans-serif;
+      background:
+        radial-gradient(circle at top, #162b4d 0%, var(--bg) 45%, #040913 100%);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    body{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:18px;
+    }
+
+    body.fullscreen-mode{
+      padding:0;
+    }
+
+    body.fullscreen-mode .launcher{
+      width:100vw;
+      height:100vh;
+      border-radius:0;
+      border:none;
+    }
+
+    body.mobile-layout .body{
+      grid-template-columns:1fr;
+    }
+
+    body.mobile-layout .sidebar{
+      display:none;
+    }
+
+    body.mobile-layout .bottom-nav{
+      display:grid;
+    }
+
+    body.mobile-layout .hero,
+    body.mobile-layout .split,
+    body.mobile-layout .detail-layout,
+    body.mobile-layout .play-shell,
+    body.mobile-layout .settings-grid{
+      grid-template-columns:1fr;
+    }
+
+    body.mobile-layout .topbar{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    body.mobile-layout .top-actions{
+      width:100%;
+      justify-content:stretch;
+    }
+
+    body.mobile-layout .search{
+      width:100%;
+    }
+
+    .launcher{
+      width:min(var(--window-w),100%);
+      height:min(var(--window-h),100%);
+      display:flex;
+      flex-direction:column;
+      background:linear-gradient(180deg, rgba(17,28,49,.98), rgba(10,17,31,.98));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transition:.2s ease;
+      position:relative;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:16px 18px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      background:linear-gradient(180deg, rgba(20,34,58,.95), rgba(13,22,39,.92));
+      flex-shrink:0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .brand-mark{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,#58c4ff,#2d6cff);
+      color:#08111f;
+      font-weight:900;
+      font-size:20px;
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      margin:0;
+      font-size:24px;
+      line-height:1;
+      color:var(--accent2);
+    }
+
+    .brand-text p{
+      margin:5px 0 0;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .search,.select{
+      background:#15243e;
+      border:1px solid #37527f;
+      border-radius:12px;
+      color:white;
+      padding:11px 12px;
+      outline:none;
+    }
+
+    .search{width:260px;max-width:100%}
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:11px 14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(180deg,var(--accent),#47abff);color:#08111f}
+    .btn-secondary{background:linear-gradient(180deg,#22385d,#192b48);color:white;border:1px solid #365582}
+    .btn-danger{background:linear-gradient(180deg,#6c2e3a,#52212c);color:white;border:1px solid #8b4857}
+    .btn-good{background:linear-gradient(180deg,#2d6e52,#234f3d);color:white;border:1px solid #3f8c68}
+
+    .body{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:240px 1fr;
+    }
+
+    .sidebar{
+      border-right:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg, rgba(19,32,55,.94), rgba(10,16,29,.92));
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .nav-title{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin:4px 4px 8px;
+    }
+
+    .nav-btn{
+      width:100%;
+      text-align:left;
+      background:transparent;
+      color:#d9e6ff;
+      border:1px solid transparent;
+      padding:13px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      font-size:14px;
+      transition:.18s ease;
+    }
+
+    .nav-btn:hover{background:#1a2d4a;border-color:#31517f}
+    .nav-btn.active{background:linear-gradient(180deg,#26466f,#1b3150);border-color:#4f74a9;color:white}
+
+    .main{
+      min-width:0;
+      min-height:0;
+      padding:18px;
+      overflow:auto;
+      background:
+        radial-gradient(circle at top right, rgba(105,198,255,.08), transparent 22%),
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+    }
+
+    .view{display:none}
+    .view.active{display:block}
+
+    .hero,.split,.detail-layout,.play-shell,.settings-grid{
+      display:grid;
+      gap:16px;
+    }
+
+    .hero{grid-template-columns:1.2fr .8fr;margin-bottom:18px}
+    .split{grid-template-columns:1fr 1fr;margin-top:18px}
+    .detail-layout{grid-template-columns:320px 1fr}
+    .play-shell{grid-template-columns:330px 1fr;min-height:72vh}
+    .settings-grid{grid-template-columns:1fr 1fr}
+
+    .card{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:0 14px 30px rgba(0,0,0,.22);
+    }
+
+    .section-title{
+      margin:0 0 10px;
+      font-size:28px;
+    }
+
+    .muted{color:var(--muted);line-height:1.6}
+
+    .stat-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .stat-box,.mini-box{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .stat-box .label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
+    }
+
+    .stat-box .value{
+      font-size:24px;
+      font-weight:900;
+    }
+
+    .list,.stats-list,.ach-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .list-item,.stats-row,.history-row{
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+      gap:14px;
+    }
+
+    .game-card{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      transition:.18s ease;
+      cursor:pointer;
+    }
+
+    .game-card:hover{transform:translateY(-3px);border-color:#5e8fd5}
+
+    .game-thumb{
+      height:160px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:58px;
+      background:linear-gradient(135deg,#234160,#17283d);
+      position:relative;
+    }
+
+    .game-body{
+      padding:16px;
+      display:grid;
+      gap:8px;
+    }
+
+    .game-title{
+      font-size:21px;
+      font-weight:900;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+    }
+
+    .star{
+      cursor:pointer;
+      font-size:22px;
+      user-select:none;
+    }
+
+    .star.active{color:var(--warn)}
+
+    .game-meta{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .save-pill{
+      position:absolute;
+      top:12px;
+      right:12px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.32);
+    }
+
+    .save-pill.has-save{
+      color:#c8ffd8;
+      border-color:rgba(121,228,160,.28);
+      background:rgba(121,228,160,.12);
+    }
+
+    .save-pill.no-save{
+      color:#ffd6dd;
+      border-color:rgba(255,123,141,.28);
+      background:rgba(255,123,141,.12);
+    }
+
+    .progress{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      overflow:hidden;
+      background:#0b1527;
+      border:1px solid #284162;
+      margin-top:6px;
+    }
+
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--accent),#8dddff);
+    }
+
+    .stats-mini{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+      margin-top:6px;
+    }
+
+    .mini-box{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .mini-box strong{
+      display:block;
+      color:white;
+      font-size:13px;
+      margin-bottom:4px;
+    }
+
+    .detail-art{
+      min-height:280px;
+      border-radius:22px;
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:92px;
+      background:linear-gradient(135deg,#234160,#17283d);
+      position:relative;
+    }
+
+    .tag-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .tag{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      color:#dbe7ff;
+    }
+
+    .history-row{
+      font-size:13px;
+    }
+
+    .play-panel{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      height:fit-content;
+    }
+
+    .runtime-wrap{
+      position:relative;
+      min-height:72vh;
+      height:72vh;
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:22px;
+      overflow:hidden;
+    }
+
+    #gameFrame{
+      width:100%;
+      height:100%;
+      border:none;
+      display:block;
+      background:#050b14;
+    }
+
+    .player-topline{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .loading-overlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at top, rgba(88,196,255,.12), transparent 30%),
+        linear-gradient(180deg, rgba(8,17,31,.96), rgba(6,12,22,.98));
+      z-index:5;
+      transition:.25s ease;
+    }
+
+    .loading-overlay.hidden{opacity:0;pointer-events:none}
+
+    .loading-card{
+      text-align:center;
+      padding:28px;
+      border-radius:22px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.09);
+      min-width:300px;
+    }
+
+    .spinner{
+      width:54px;
+      height:54px;
+      margin:0 auto 16px;
+      border-radius:50%;
+      border:5px solid rgba(255,255,255,.12);
+      border-top-color:var(--accent);
+      animation:spin 1s linear infinite;
+    }
+
+    .toast-wrap{
+      position:absolute;
+      top:18px;
+      right:18px;
+      z-index:20;
+      display:grid;
+      gap:10px;
+      pointer-events:none;
+      width:min(360px, calc(100% - 36px));
+    }
+
+    .toast{
+      background:linear-gradient(180deg,#17314f,#112640);
+      border:1px solid #3a5f94;
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 18px 30px rgba(0,0,0,.28);
+      opacity:0;
+      transform:translateY(-10px);
+      animation:toastIn .2s ease forwards;
+    }
+
+    .toast.achievement{
+      border-color:rgba(121,228,160,.34);
+      background:linear-gradient(180deg,#19364f,#10253a);
+    }
+
+    .toast-title{
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .toast-sub{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .setting-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+
+    .setting-row:last-child{border-bottom:none}
+
+    .toggle-group{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .toggle-option{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #365582;
+      background:#1b2d49;
+      color:white;
+      cursor:pointer;
+      font-weight:800;
+    }
+
+    .toggle-option.active{
+      background:linear-gradient(180deg,var(--accent),#47abff);
+      color:#08111f;
+      border-color:transparent;
+    }
+
+    .bottom-nav{
+      display:none;
+      grid-template-columns:repeat(6,1fr);
+      gap:8px;
+      padding:12px;
+      border-top:1px solid rgba(255,255,255,.07);
+      background:linear-gradient(180deg, rgba(20,34,58,.95), rgba(13,22,39,.92));
+      flex-shrink:0;
+    }
+
+    .bottom-nav button{
+      padding:12px 8px;
+      border-radius:14px;
+      border:1px solid #365582;
+      background:#1c2e4a;
+      color:white;
+      font-weight:800;
+      cursor:pointer;
+      font-size:12px;
+    }
+
+    .bottom-nav button.active{
+      background:linear-gradient(180deg,#26466f,#1b3150);
+    }
+
+    @keyframes toastIn{to{opacity:1; transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    @media (max-width:980px){
+      .body{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .bottom-nav{display:grid}
+      .hero,.split,.detail-layout,.play-shell,.settings-grid{grid-template-columns:1fr}
+      .topbar{align-items:flex-start;flex-direction:column}
+      .top-actions{width:100%;justify-content:stretch}
+      .search{width:100%}
+      .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+  </style>
+</head>
+<body>
+  <div class="launcher">
+    <div class="toast-wrap" id="toastWrap"></div>
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">B</div>
+        <div class="brand-text">
+          <h1>Bluemoon Nexus</h1>
+          <p>Launcher V2 with JS game registry</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <input id="searchInput" class="search" type="text" placeholder="Search games..." />
+        <button id="fullscreenBtn" class="btn btn-secondary">Fullscreen</button>
+      </div>
+    </div>
+
+    <div class="body">
+      <aside class="sidebar">
+        <div class="nav-title">Navigation</div>
+        <button class="nav-btn active" data-view="homeView">Home</button>
+        <button class="nav-btn" data-view="libraryView">Library</button>
+        <button class="nav-btn" data-view="detailView">Details</button>
+        <button class="nav-btn" data-view="achievementsView">Achievements</button>
+        <button class="nav-btn" data-view="playView">Player</button>
+        <button class="nav-btn" data-view="statsView">Stats</button>
+        <button class="nav-btn" data-view="notificationsView">Notifications</button>
+        <button class="nav-btn" data-view="settingsView">Settings</button>
+      </aside>
+
+      <main class="main">
+        <section id="homeView" class="view active">
+          <div class="hero">
+            <div class="card">
+              <div class="section-title">Welcome to Bluemoon Nexus</div>
+              <div class="muted">
+                Games are now managed by a JavaScript registry, making the launcher easier to scale.
+                Z1: Last Base is now added to the launcher.
+              </div>
+
+              <div class="stat-grid">
+                <div class="stat-box">
+                  <div class="label">Games</div>
+                  <div class="value" id="homeGameCount">0</div>
+                </div>
+                <div class="stat-box">
+                  <div class="label">Unlocked</div>
+                  <div class="value" id="homeAchievementsTotal">0</div>
+                </div>
+                <div class="stat-box">
+                  <div class="label">Saves Found</div>
+                  <div class="value" id="homeSavesValue">0</div>
+                </div>
+                <div class="stat-box">
+                  <div class="label">Mode</div>
+                  <div class="value" id="homeModeValue">Windowed</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">Featured</div>
+              <div class="list" id="featuredBox"></div>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="card">
+              <div class="section-title">Recently Played</div>
+              <div class="list" id="recentList"></div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">Favorites</div>
+              <div class="list" id="favoritesList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="libraryView" class="view">
+          <div class="card">
+            <div class="section-title">Library</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+              <select id="sortSelect" class="select">
+                <option value="title">Sort: Title</option>
+                <option value="lastPlayed">Sort: Last Played</option>
+                <option value="completion">Sort: Completion</option>
+                <option value="favorites">Sort: Favorites</option>
+                <option value="saveState">Sort: Save State</option>
+              </select>
+              <select id="filterSelect" class="select">
+                <option value="all">Filter: All</option>
+                <option value="favorites">Favorites</option>
+                <option value="hasSave">Has Save</option>
+                <option value="noSave">No Save</option>
+              </select>
+            </div>
+            <div id="libraryGrid" class="grid"></div>
+          </div>
+        </section>
+
+        <section id="detailView" class="view">
+          <div class="card">
+            <button class="btn btn-secondary" onclick="showView('libraryView')">← Back to Library</button>
+            <div class="detail-layout" style="margin-top:16px;">
+              <div id="detailArt" class="detail-art">🎮</div>
+              <div>
+                <div id="detailTitle" class="section-title">Game Details</div>
+                <div id="detailMeta" class="muted"></div>
+                <div id="detailTags" class="tag-row"></div>
+
+                <div class="stat-grid" style="margin-top:14px;">
+                  <div class="stat-box">
+                    <div class="label">Achievements</div>
+                    <div class="value" id="detailAchievementsValue">0 / 0</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="label">Playtime</div>
+                    <div class="value" id="detailPlaytimeValue">0h 0m</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="label">Save State</div>
+                    <div class="value" id="detailSaveValue" style="font-size:18px;">No Save</div>
+                  </div>
+                  <div class="stat-box">
+                    <div class="label">Version</div>
+                    <div class="value" id="detailVersionValue" style="font-size:18px;">1.0.0</div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+                  <button id="detailPlayBtn" class="btn btn-primary">Play</button>
+                  <button id="detailFavoriteBtn" class="btn btn-secondary">Favorite</button>
+                  <button id="detailResetSaveBtn" class="btn btn-danger">Reset Save</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="split">
+              <div class="card" style="padding:14px;">
+                <div style="font-size:22px; font-weight:900;">Achievement History</div>
+                <div id="detailAchievementHistory" class="stats-list" style="margin-top:12px;"></div>
+              </div>
+              <div class="card" style="padding:14px;">
+                <div style="font-size:22px; font-weight:900;">Custom Stats</div>
+                <div id="detailCustomStats" class="stats-list" style="margin-top:12px;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="achievementsView" class="view">
+          <div class="card">
+            <div class="section-title">Achievements</div>
+            <div class="muted">Launcher-wide achievement completion by game.</div>
+
+            <div class="stat-grid">
+              <div class="stat-box">
+                <div class="label">Unlocked</div>
+                <div class="value" id="achUnlockedValue">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Total</div>
+                <div class="value" id="achTotalValue">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Completion</div>
+                <div class="value" id="achPercentValue">0%</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Save Files</div>
+                <div class="value" id="achSavesValue">0</div>
+              </div>
+            </div>
+
+            <div id="achievementsGrid" class="ach-grid"></div>
+          </div>
+        </section>
+
+        <section id="playView" class="view">
+          <div class="play-shell">
+            <div class="play-panel">
+              <div class="player-topline">
+                <div>
+                  <div class="section-title" id="playerTitle">Player</div>
+                  <div class="muted" id="playerSubtitle">Launch a game from the library.</div>
+                </div>
+                <div id="sessionTimer" class="tag">0m 0s</div>
+              </div>
+
+              <div class="stats-list" id="playerStatsBox"></div>
+
+              <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" onclick="stopGame()">Stop Game</button>
+                <button class="btn btn-secondary" onclick="reloadGame()">Reload</button>
+                <button class="btn btn-secondary" onclick="toggleLauncherFullscreen()">Fullscreen</button>
+              </div>
+            </div>
+
+            <div class="runtime-wrap">
+              <div id="loadingOverlay" class="loading-overlay hidden">
+                <div class="loading-card">
+                  <div class="spinner"></div>
+                  <div style="font-size:24px; font-weight:900; margin-bottom:8px;" id="loadingTitle">Loading Game...</div>
+                  <div class="muted" id="loadingTip">Preparing Bluemoon Nexus runtime</div>
+                  <div class="progress" style="margin-top:14px;">
+                    <div id="loadingBar" class="progress-fill" style="width:22%;"></div>
+                  </div>
+                </div>
+              </div>
+              <iframe id="gameFrame" title="Bluemoon Nexus Game Runtime"></iframe>
+            </div>
+          </div>
+        </section>
+
+        <section id="statsView" class="view">
+          <div class="card">
+            <div class="section-title">Launcher Stats</div>
+
+            <div class="stat-grid">
+              <div class="stat-box">
+                <div class="label">Games</div>
+                <div class="value" id="statsGamesValue">0</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Playtime</div>
+                <div class="value" id="statsPlaytimeValue">0h 0m</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Device Mode</div>
+                <div id="statsDeviceModeLabel" class="value" style="font-size:18px;">Computer</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Save Files</div>
+                <div id="statsSaveCountValue" class="value">0</div>
+              </div>
+            </div>
+
+            <div id="globalStatsList" class="stats-list" style="margin-top:16px;"></div>
+          </div>
+        </section>
+
+        <section id="notificationsView" class="view">
+          <div class="card">
+            <div class="section-title">Notification Center</div>
+            <div id="notificationsList" class="stats-list"></div>
+          </div>
+        </section>
+
+        <section id="settingsView" class="view">
+          <div class="settings-grid">
+            <div class="card">
+              <div class="section-title">Display</div>
+
+              <div class="setting-row">
+                <div>
+                  <strong>Launcher Window</strong>
+                  <div class="muted">Centered window or fullscreen mode</div>
+                </div>
+                <div class="toggle-group">
+                  <button id="windowedToggle" class="toggle-option">Windowed</button>
+                  <button id="fullscreenToggle" class="toggle-option">Fullscreen</button>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <strong>Device Support</strong>
+                  <div class="muted">Switch between computer support and mobile support</div>
+                </div>
+                <div class="toggle-group">
+                  <button id="desktopModeToggle" class="toggle-option">Computer Mode</button>
+                  <button id="mobileModeToggle" class="toggle-option">Mobile Mode</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="section-title">System</div>
+
+              <div class="setting-row">
+                <div>
+                  <strong>Reset Launcher Data</strong>
+                  <div class="muted">Clears preferences, stats, favorites, save flags, and achievement progress</div>
+                </div>
+                <button id="resetLauncherBtn" class="btn btn-danger">Reset</button>
+              </div>
+
+              <div class="setting-row">
+                <div>
+                  <strong>Version</strong>
+                  <div class="muted">Current launcher build</div>
+                </div>
+                <div>V2</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="bottom-nav-btn active" data-view="homeView">Home</button>
+      <button class="bottom-nav-btn" data-view="libraryView">Library</button>
+      <button class="bottom-nav-btn" data-view="detailView">Details</button>
+      <button class="bottom-nav-btn" data-view="achievementsView">Ach</button>
+      <button class="bottom-nav-btn" data-view="playView">Player</button>
+      <button class="bottom-nav-btn" data-view="statsView">Stats</button>
+    </nav>
+  </div>
+
+  <script>
+    const DEVICE_MODE_KEY = "bnx_v2_device_mode";
+    const WINDOW_MODE_KEY = "bnx_v2_window_mode";
+    const GAME_DATA_KEY = "bnx_v2_game_data";
+    const NOTIFICATIONS_KEY = "bnx_v2_notifications";
+
+    const GAME_REGISTRY = [
+      {
+        id: "structural-chaos",
+        title: "Structural Chaos",
+        file: "games/structural-chaos.html",
+        creator: "@Bluemoon Nexus",
+        description: "A chaotic structural engineering challenge game. Build, survive, and watch the destruction unfold.",
+        emoji: "🏗️",
+        totalAchievements: 55,
+        version: "1.0.0",
+        tags: ["strategy", "physics", "survival"]
+      },
+      {
+        id: "z1-last-base",
+        title: "Z1: Last Base",
+        file: "games/z1_last_base.html",
+        creator: "@Bluemoon Nexus",
+        description: "Defend the last surviving base and manage your final stand against overwhelming pressure.",
+        emoji: "🛡️",
+        totalAchievements: 0,
+        version: "1.0.0",
+        tags: ["defense", "survival", "last stand"]
+      }
+    ];
+
+    let currentGamePath = "";
+    let currentGameTitle = "";
+    let currentGameId = "";
+    let selectedGameId = GAME_REGISTRY[0]?.id || "";
+    let sessionStart = null;
+    let sessionInterval = null;
+    let loadingInterval = null;
+
+    function baseGameData() {
+      const base = {};
+      GAME_REGISTRY.forEach(game => {
+        base[game.id] = {
+          unlocked: 0,
+          total: game.totalAchievements,
+          hasSave: false,
+          stats: {},
+          playtimeSeconds: 0,
+          launches: 0,
+          lastPlayed: null,
+          favorites: false,
+          achievementHistory: []
+        };
+      });
+      return base;
+    }
+
+    function loadGameData() {
+      const base = baseGameData();
+      try {
+        const raw = localStorage.getItem(GAME_DATA_KEY);
+        if (!raw) return base;
+        const parsed = JSON.parse(raw);
+        GAME_REGISTRY.forEach(game => {
+          if (parsed[game.id]) {
+            base[game.id] = {
+              ...base[game.id],
+              ...parsed[game.id],
+              total: parsed[game.id].total ?? game.totalAchievements
+            };
+          }
+        });
+      } catch (e) {}
+      return base;
+    }
+
+    function loadNotifications() {
+      try {
+        const raw = localStorage.getItem(NOTIFICATIONS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    let gameData = loadGameData();
+    let notifications = loadNotifications();
+
+    function saveGameData() {
+      localStorage.setItem(GAME_DATA_KEY, JSON.stringify(gameData));
+    }
+
+    function saveNotifications() {
+      localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.slice(0, 60)));
+    }
+
+    function getGame(gameId) {
+      return GAME_REGISTRY.find(g => g.id === gameId);
+    }
+
+    function getGameData(gameId) {
+      if (!gameData[gameId]) {
+        const game = getGame(gameId);
+        gameData[gameId] = {
+          unlocked: 0,
+          total: game ? game.totalAchievements : 0,
+          hasSave: false,
+          stats: {},
+          playtimeSeconds: 0,
+          launches: 0,
+          lastPlayed: null,
+          favorites: false,
+          achievementHistory: []
+        };
+      }
+      return gameData[gameId];
+    }
+
+    function addNotification(title, subtitle, type = "system") {
+      notifications.unshift({
+        title,
+        subtitle,
+        type,
+        time: new Date().toISOString()
+      });
+      saveNotifications();
+      renderNotifications();
+      showToast(title, subtitle, type);
+    }
+
+    function showToast(title, subtitle, type = "") {
+      const wrap = document.getElementById("toastWrap");
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`.trim();
+      toast.innerHTML = `
+        <div class="toast-title">${title}</div>
+        <div class="toast-sub">${subtitle}</div>
+      `;
+      wrap.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+      }, 2600);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    function formatPlaytime(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      return `${h}h ${m}m`;
+    }
+
+    function formatSession(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}m ${s}s`;
+    }
+
+    function formatDate(value) {
+      if (!value) return "Never";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "Never";
+      return d.toLocaleString();
+    }
+
+    function getUnlockedTotal() {
+      return GAME_REGISTRY.reduce((sum, game) => sum + (getGameData(game.id).unlocked || 0), 0);
+    }
+
+    function getAchievementGrandTotal() {
+      return GAME_REGISTRY.reduce((sum, game) => sum + (getGameData(game.id).total || 0), 0);
+    }
+
+    function getSaveCount() {
+      return GAME_REGISTRY.reduce((sum, game) => sum + (getGameData(game.id).hasSave ? 1 : 0), 0);
+    }
+
+    function getTotalPlaytime() {
+      return GAME_REGISTRY.reduce((sum, game) => sum + (getGameData(game.id).playtimeSeconds || 0), 0);
+    }
+
+    function showView(viewId){
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      const view = document.getElementById(viewId);
+      if (view) view.classList.add("active");
+
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.view === viewId);
+      });
+
+      document.querySelectorAll(".bottom-nav-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.view === viewId);
+      });
+
+      if(viewId === "homeView") renderHome();
+      if(viewId === "libraryView") renderLibrary();
+      if(viewId === "detailView") renderDetailView();
+      if(viewId === "achievementsView") refreshAchievementSummary();
+      if(viewId === "playView") renderPlayerPanel();
+      if(viewId === "statsView") renderStatsView();
+      if(viewId === "notificationsView") renderNotifications();
+    }
+
+    function renderHome() {
+      document.getElementById("homeGameCount").textContent = String(GAME_REGISTRY.length);
+      document.getElementById("homeAchievementsTotal").textContent = String(getUnlockedTotal());
+      document.getElementById("homeSavesValue").textContent = String(getSaveCount());
+
+      const featured = GAME_REGISTRY[0];
+      const featuredData = getGameData(featured.id);
+      document.getElementById("featuredBox").innerHTML = `
+        <div class="list-item">
+          <div>
+            <strong>${featured.title}</strong>
+            <div class="muted">${featured.description}</div>
+          </div>
+          <button class="btn btn-primary" onclick="launchGame('${featured.file}', '${featured.title.replace(/'/g, "\\'")}', '${featured.id}')">Play</button>
+        </div>
+        <div class="list-item">
+          <div>
+            <strong>Progress</strong>
+            <div class="muted">${featuredData.unlocked} / ${featuredData.total} achievements • ${formatPlaytime(featuredData.playtimeSeconds)}</div>
+          </div>
+          <div class="${featuredData.hasSave ? 'save-pill has-save' : 'save-pill no-save'}" style="position:static;">
+            ${featuredData.hasSave ? "Save Detected" : "No Save"}
+          </div>
+        </div>
+      `;
+
+      const recentGames = [...GAME_REGISTRY]
+        .filter(g => getGameData(g.id).lastPlayed)
+        .sort((a,b) => new Date(getGameData(b.id).lastPlayed) - new Date(getGameData(a.id).lastPlayed))
+        .slice(0,4);
+
+      const recentBox = document.getElementById("recentList");
+      if (!recentGames.length) {
+        recentBox.innerHTML = `<div class="list-item"><span>No games played yet</span><span>—</span></div>`;
+      } else {
+        recentBox.innerHTML = recentGames.map(game => {
+          const data = getGameData(game.id);
+          return `
+            <div class="list-item">
+              <div>
+                <strong>${game.emoji} ${game.title}</strong>
+                <div class="muted">Last played: ${formatDate(data.lastPlayed)}</div>
+              </div>
+              <span>${formatPlaytime(data.playtimeSeconds)}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const favoriteGames = GAME_REGISTRY.filter(g => getGameData(g.id).favorites);
+      const favBox = document.getElementById("favoritesList");
+      if (!favoriteGames.length) {
+        favBox.innerHTML = `<div class="list-item"><span>No favorites yet</span><span>☆</span></div>`;
+      } else {
+        favBox.innerHTML = favoriteGames.map(game => `
+          <div class="list-item">
+            <div>
+              <strong>${game.emoji} ${game.title}</strong>
+              <div class="muted">${game.creator}</div>
+            </div>
+            <button class="btn btn-secondary" onclick="openDetail('${game.id}')">Open</button>
+          </div>
+        `).join("");
+      }
+    }
+
+    function renderLibrary(){
+      const term = document.getElementById("searchInput").value.trim().toLowerCase();
+      const sortBy = document.getElementById("sortSelect")?.value || "title";
+      const filterBy = document.getElementById("filterSelect")?.value || "all";
+      const grid = document.getElementById("libraryGrid");
+
+      let filtered = GAME_REGISTRY.filter(game =>
+        game.title.toLowerCase().includes(term) ||
+        game.creator.toLowerCase().includes(term) ||
+        game.description.toLowerCase().includes(term) ||
+        (game.tags || []).some(tag => tag.toLowerCase().includes(term))
+      );
+
+      if (filterBy === "favorites") filtered = filtered.filter(g => getGameData(g.id).favorites);
+      if (filterBy === "hasSave") filtered = filtered.filter(g => getGameData(g.id).hasSave);
+      if (filterBy === "noSave") filtered = filtered.filter(g => !getGameData(g.id).hasSave);
+
+      filtered.sort((a,b) => {
+        const da = getGameData(a.id);
+        const db = getGameData(b.id);
+
+        if (sortBy === "lastPlayed") return new Date(db.lastPlayed || 0) - new Date(da.lastPlayed || 0);
+        if (sortBy === "completion") {
+          const pa = da.total ? da.unlocked / da.total : 0;
+          const pb = db.total ? db.unlocked / db.total : 0;
+          return pb - pa;
+        }
+        if (sortBy === "favorites") return Number(db.favorites) - Number(da.favorites);
+        if (sortBy === "saveState") return Number(db.hasSave) - Number(da.hasSave);
+        return a.title.localeCompare(b.title);
+      });
+
+      if(!filtered.length){
+        grid.innerHTML = `<div class="card"><div class="muted">No games found.</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(game => {
+        const data = getGameData(game.id);
+        const percent = data.total > 0 ? Math.round((data.unlocked / data.total) * 100) : 0;
+        const customStats = formatCustomStatsSummary(data.stats);
+
+        return `
+          <div class="game-card" onclick="openDetail('${game.id}')">
+            <div class="game-thumb">
+              ${game.emoji}
+              <div class="save-pill ${data.hasSave ? 'has-save' : 'no-save'}">
+                ${data.hasSave ? 'Save Detected' : 'No Save'}
+              </div>
+            </div>
+            <div class="game-body">
+              <div class="game-title">
+                <span>${game.title}</span>
+                <span class="star ${data.favorites ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${game.id}')">${data.favorites ? "★" : "☆"}</span>
+              </div>
+              <div class="game-meta">${game.creator} • v${game.version}</div>
+              <div class="muted">${game.description}</div>
+              <div class="game-meta">Achievements: ${data.unlocked} / ${data.total}</div>
+              <div class="progress">
+                <div class="progress-fill" style="width:${percent}%"></div>
+              </div>
+              <div class="stats-mini">
+                <div class="mini-box">
+                  <strong>Playtime</strong>
+                  ${formatPlaytime(data.playtimeSeconds)}
+                </div>
+                <div class="mini-box">
+                  <strong>Launches</strong>
+                  ${data.launches}
+                </div>
+              </div>
+              <div class="mini-box" style="margin-top:6px;">
+                <strong>Stats</strong>
+                ${customStats}
+              </div>
+              <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="event.stopPropagation(); launchGame('${game.file}', '${game.title.replace(/'/g, "\\'")}', '${game.id}')">Play</button>
+                <button class="btn btn-secondary" onclick="event.stopPropagation(); openDetail('${game.id}')">Details</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openDetail(gameId) {
+      selectedGameId = gameId;
+      renderDetailView();
+      showView("detailView");
+    }
+
+    function renderDetailView() {
+      const game = getGame(selectedGameId) || GAME_REGISTRY[0];
+      if (!game) return;
+      const data = getGameData(game.id);
+
+      document.getElementById("detailArt").textContent = game.emoji;
+      document.getElementById("detailTitle").textContent = game.title;
+      document.getElementById("detailMeta").innerHTML = `${game.creator} • ${game.description}<br>Last Played: ${formatDate(data.lastPlayed)}`;
+      document.getElementById("detailAchievementsValue").textContent = `${data.unlocked} / ${data.total}`;
+      document.getElementById("detailPlaytimeValue").textContent = formatPlaytime(data.playtimeSeconds);
+      document.getElementById("detailSaveValue").textContent = data.hasSave ? "Save Detected" : "No Save";
+      document.getElementById("detailVersionValue").textContent = game.version;
+      document.getElementById("detailFavoriteBtn").textContent = data.favorites ? "Unfavorite" : "Favorite";
+      document.getElementById("detailPlayBtn").onclick = () => launchGame(game.file, game.title, game.id);
+      document.getElementById("detailFavoriteBtn").onclick = () => {
+        toggleFavorite(game.id);
+        renderDetailView();
+      };
+      document.getElementById("detailResetSaveBtn").onclick = () => resetGameSave(game.id);
+
+      document.getElementById("detailTags").innerHTML = (game.tags || []).map(tag => `<span class="tag">${tag}</span>`).join("");
+
+      const history = data.achievementHistory || [];
+      document.getElementById("detailAchievementHistory").innerHTML = history.length
+        ? history.slice(0, 12).map(item => `
+            <div class="history-row">
+              <span>${item.name || item.id}</span>
+              <strong>${formatDate(item.time)}</strong>
+            </div>
+          `).join("")
+        : `<div class="stats-row"><span>No unlock history yet</span><span>—</span></div>`;
+
+      document.getElementById("detailCustomStats").innerHTML = renderCustomStatsRows(data.stats);
+    }
+
+    function refreshAchievementSummary() {
+      const unlocked = getUnlockedTotal();
+      const total = getAchievementGrandTotal();
+      const percent = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+      const saves = getSaveCount();
+
+      document.getElementById("achUnlockedValue").textContent = String(unlocked);
+      document.getElementById("achTotalValue").textContent = String(total);
+      document.getElementById("achPercentValue").textContent = `${percent}%`;
+      document.getElementById("achSavesValue").textContent = String(saves);
+
+      const box = document.getElementById("achievementsGrid");
+      box.innerHTML = GAME_REGISTRY.map(game => {
+        const data = getGameData(game.id);
+        const p = data.total > 0 ? Math.round((data.unlocked / data.total) * 100) : 0;
+        return `
+          <div class="ach-card">
+            <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;">
+              <div>
+                <div style="font-size:20px; font-weight:900;">${game.emoji} ${game.title}</div>
+                <div class="muted">${game.creator}</div>
+              </div>
+              <div class="ach-big">${data.unlocked} / ${data.total}</div>
+            </div>
+            <div class="progress">
+              <div class="progress-fill" style="width:${p}%"></div>
+            </div>
+            <div class="muted" style="margin-top:8px;">${p}% completed • ${data.hasSave ? "Save detected" : "No save"}</div>
+            <div class="stats-list">
+              ${renderCustomStatsRows(data.stats)}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderPlayerPanel() {
+      const box = document.getElementById("playerStatsBox");
+      if (!currentGameId) {
+        box.innerHTML = `<div class="stats-row"><span>No active game</span><span>—</span></div>`;
+        return;
+      }
+
+      const data = getGameData(currentGameId);
+      box.innerHTML = `
+        <div class="stats-row"><span>Achievements</span><strong>${data.unlocked} / ${data.total}</strong></div>
+        <div class="stats-row"><span>Save State</span><strong>${data.hasSave ? "Detected" : "No Save"}</strong></div>
+        <div class="stats-row"><span>Total Playtime</span><strong>${formatPlaytime(data.playtimeSeconds)}</strong></div>
+        ${renderCustomStatsRows(data.stats)}
+      `;
+    }
+
+    function renderStatsView() {
+      document.getElementById("statsGamesValue").textContent = String(GAME_REGISTRY.length);
+      document.getElementById("statsPlaytimeValue").textContent = formatPlaytime(getTotalPlaytime());
+      document.getElementById("statsSaveCountValue").textContent = String(getSaveCount());
+
+      const box = document.getElementById("globalStatsList");
+      box.innerHTML = GAME_REGISTRY.map(game => {
+        const data = getGameData(game.id);
+        return `
+          <div class="stats-row">
+            <span><strong>${game.title}</strong> — ${data.unlocked}/${data.total} achievements • ${formatPlaytime(data.playtimeSeconds)}</span>
+            <span>${data.hasSave ? "Save detected" : "No save"}</span>
+          </div>
+          ${Object.keys(data.stats || {}).length ? renderCustomStatsRows(data.stats) : ""}
+        `;
+      }).join("") || `<div class="stats-row"><span>No stats yet</span><span>—</span></div>`;
+    }
+
+    function renderNotifications() {
+      const box = document.getElementById("notificationsList");
+      if (!notifications.length) {
+        box.innerHTML = `<div class="stats-row"><span>No notifications yet</span><span>—</span></div>`;
+        return;
+      }
+      box.innerHTML = notifications.map(item => `
+        <div class="stats-row">
+          <div>
+            <strong>${item.title}</strong>
+            <div class="muted">${item.subtitle}</div>
+          </div>
+          <span>${formatDate(item.time)}</span>
+        </div>
+      `).join("");
+    }
+
+    function formatCustomStatsSummary(stats) {
+      const entries = Object.entries(stats || {});
+      if (!entries.length) return "No custom stats reported yet.";
+      return entries.slice(0, 3).map(([k, v]) => `${prettifyKey(k)}: ${v}`).join(" • ");
+    }
+
+    function renderCustomStatsRows(stats) {
+      const entries = Object.entries(stats || {});
+      if (!entries.length) {
+        return `<div class="stats-row"><span>Custom Stats</span><span>None reported</span></div>`;
+      }
+      return entries.map(([key, value]) => `
+        <div class="stats-row"><span>${prettifyKey(key)}</span><strong>${value}</strong></div>
+      `).join("");
+    }
+
+    function prettifyKey(key) {
+      return key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/[_-]/g, " ")
+        .replace(/\s+/g, " ")
+        .replace(/^./, c => c.toUpperCase());
+    }
+
+    function toggleFavorite(gameId) {
+      const data = getGameData(gameId);
+      data.favorites = !data.favorites;
+      saveGameData();
+      renderLibrary();
+      renderHome();
+      if (selectedGameId === gameId) renderDetailView();
+    }
+
+    function resetGameSave(gameId) {
+      const game = getGame(gameId);
+      if (!game) return;
+      if (!confirm(`Reset launcher save state for ${game.title}?`)) return;
+      const data = getGameData(gameId);
+      data.hasSave = false;
+      saveGameData();
+      addNotification("Save Reset", `${game.title} save state cleared in launcher.`);
+      refreshAllViews();
+    }
+
+    function showLoading(title) {
+      document.getElementById("loadingTitle").textContent = `Loading ${title}...`;
+      document.getElementById("loadingTip").textContent = "Preparing Bluemoon Nexus runtime";
+      document.getElementById("loadingBar").style.width = "18%";
+      document.getElementById("loadingOverlay").classList.remove("hidden");
+
+      let progress = 18;
+      clearInterval(loadingInterval);
+      loadingInterval = setInterval(() => {
+        progress = Math.min(progress + Math.random() * 14, 88);
+        document.getElementById("loadingBar").style.width = `${progress}%`;
+      }, 250);
+    }
+
+    function hideLoading() {
+      clearInterval(loadingInterval);
+      document.getElementById("loadingBar").style.width = "100%";
+      setTimeout(() => {
+        document.getElementById("loadingOverlay").classList.add("hidden");
+        document.getElementById("loadingBar").style.width = "18%";
+      }, 180);
+    }
+
+    function launchGame(path, title, gameId){
+      currentGamePath = path;
+      currentGameTitle = title;
+      currentGameId = gameId;
+      selectedGameId = gameId;
+
+      const data = getGameData(gameId);
+      data.launches += 1;
+      data.lastPlayed = new Date().toISOString();
+      saveGameData();
+
+      setWindowMode("fullscreen");
+      showView("playView");
+      showLoading(title);
+
+      document.getElementById("playerTitle").textContent = title;
+      document.getElementById("playerSubtitle").textContent = "Loading inside Bluemoon Nexus runtime...";
+      renderPlayerPanel();
+
+      startSessionTimer();
+
+      const frame = document.getElementById("gameFrame");
+      frame.src = "about:blank";
+
+      setTimeout(() => {
+        frame.src = path;
+      }, 250);
+
+      addNotification("Game Launched", `${title} started in Bluemoon Nexus.`);
+      refreshAllViews();
+    }
+
+    function stopGame(){
+      endSessionTimer();
+      currentGamePath = "";
+      currentGameTitle = "";
+      currentGameId = "";
+      document.getElementById("gameFrame").src = "about:blank";
+      hideLoading();
+      document.getElementById("playerTitle").textContent = "Player";
+      document.getElementById("playerSubtitle").textContent = "Launch a game from the library.";
+      setWindowMode("windowed");
+      renderPlayerPanel();
+      showView("libraryView");
+    }
+
+    function reloadGame(){
+      if(!currentGamePath) return;
+      showLoading(currentGameTitle || "Game");
+      const frame = document.getElementById("gameFrame");
+      frame.src = "about:blank";
+      setTimeout(() => {
+        frame.src = currentGamePath;
+      }, 250);
+    }
+
+    function startSessionTimer() {
+      endSessionTimer();
+      sessionStart = Date.now();
+      sessionInterval = setInterval(() => {
+        const seconds = Math.floor((Date.now() - sessionStart) / 1000);
+        document.getElementById("sessionTimer").textContent = formatSession(seconds);
+      }, 1000);
+    }
+
+    function endSessionTimer() {
+      if (sessionInterval) clearInterval(sessionInterval);
+      if (currentGameId && sessionStart) {
+        const seconds = Math.floor((Date.now() - sessionStart) / 1000);
+        const data = getGameData(currentGameId);
+        data.playtimeSeconds += Math.max(0, seconds);
+        saveGameData();
+      }
+      sessionStart = null;
+      sessionInterval = null;
+      document.getElementById("sessionTimer").textContent = "0m 0s";
+    }
+
+    document.getElementById("gameFrame").addEventListener("load", () => {
+      hideLoading();
+      if(currentGameTitle){
+        document.getElementById("playerSubtitle").textContent = "Game loaded successfully.";
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      endSessionTimer();
+    });
+
+    window.addEventListener("message", (event) => {
+      const data = event.data;
+      if (!data || !data.type || !data.gameId) return;
+
+      const game = getGameData(data.gameId);
+      const gameMeta = getGame(data.gameId);
+
+      if (data.type === "BNX_GAME_INIT") {
+        if (data.config?.achievementsTotal != null) {
+          game.total = Math.max(game.unlocked, Number(data.config.achievementsTotal) || game.total);
+        }
+        saveGameData();
+      }
+
+      if (data.type === "BNX_ACHIEVEMENTS") {
+        if (typeof data.unlocked === "number") game.unlocked = Math.max(game.unlocked, data.unlocked);
+        if (typeof data.total === "number") game.total = Math.max(game.total, data.total);
+        saveGameData();
+      }
+
+      if (data.type === "BNX_ACHIEVEMENT_UNLOCKED") {
+        const before = game.unlocked;
+        if (typeof data.unlocked === "number") {
+          game.unlocked = Math.max(game.unlocked, data.unlocked);
+        } else {
+          game.unlocked = Math.min(game.total, game.unlocked + 1);
+        }
+        if (typeof data.total === "number") {
+          game.total = Math.max(game.total, data.total);
+        }
+
+        if (!game.achievementHistory) game.achievementHistory = [];
+        game.achievementHistory.unshift({
+          id: data.achievementId || "achievement",
+          name: data.achievementId || "Achievement",
+          time: new Date().toISOString()
+        });
+        game.achievementHistory = game.achievementHistory.slice(0, 50);
+        saveGameData();
+
+        if (game.unlocked > before) {
+          addNotification(
+            "Achievement Unlocked",
+            `${data.achievementId || "New achievement"} • ${gameMeta?.title || data.gameId}`,
+            "achievement"
+          );
+        }
+      }
+
+      if (data.type === "BNX_STATS") {
+        game.stats = { ...(game.stats || {}), ...(data.stats || {}) };
+        saveGameData();
+      }
+
+      if (data.type === "BNX_SAVE_STATE") {
+        game.hasSave = !!data.hasSave;
+        saveGameData();
+      }
+
+      refreshAllViews();
+    });
+
+    function refreshAllViews() {
+      renderHome();
+      renderLibrary();
+      refreshAchievementSummary();
+      renderStatsView();
+      renderNotifications();
+      renderPlayerPanel();
+      renderDetailView();
+    }
+
+    function getDeviceMode(){
+      return localStorage.getItem(DEVICE_MODE_KEY) || "desktop";
+    }
+
+    function setDeviceMode(mode){
+      localStorage.setItem(DEVICE_MODE_KEY, mode);
+      applyDeviceMode();
+      syncSettingButtons();
+    }
+
+    function applyDeviceMode(){
+      const mobile = getDeviceMode() === "mobile";
+      document.body.classList.toggle("mobile-layout", mobile);
+      document.getElementById("statsDeviceModeLabel").textContent = mobile ? "Mobile" : "Computer";
+    }
+
+    function getWindowMode(){
+      return localStorage.getItem(WINDOW_MODE_KEY) || "windowed";
+    }
+
+    function setWindowMode(mode){
+      localStorage.setItem(WINDOW_MODE_KEY, mode);
+      applyWindowMode();
+      syncSettingButtons();
+      document.getElementById("homeModeValue").textContent = mode === "fullscreen" ? "Fullscreen" : "Windowed";
+    }
+
+    function applyWindowMode(){
+      document.body.classList.toggle("fullscreen-mode", getWindowMode() === "fullscreen");
+    }
+
+    function toggleLauncherFullscreen() {
+      const next = getWindowMode() === "fullscreen" ? "windowed" : "fullscreen";
+      setWindowMode(next);
+    }
+
+    function syncSettingButtons(){
+      const deviceMode = getDeviceMode();
+      const windowMode = getWindowMode();
+
+      document.getElementById("desktopModeToggle").classList.toggle("active", deviceMode === "desktop");
+      document.getElementById("mobileModeToggle").classList.toggle("active", deviceMode === "mobile");
+      document.getElementById("windowedToggle").classList.toggle("active", windowMode === "windowed");
+      document.getElementById("fullscreenToggle").classList.toggle("active", windowMode === "fullscreen");
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.addEventListener("click", () => showView(btn.dataset.view));
+    });
+
+    document.querySelectorAll(".bottom-nav-btn").forEach(btn => {
+      btn.addEventListener("click", () => showView(btn.dataset.view));
+    });
+
+    document.getElementById("desktopModeToggle").addEventListener("click", () => setDeviceMode("desktop"));
+    document.getElementById("mobileModeToggle").addEventListener("click", () => setDeviceMode("mobile"));
+    document.getElementById("windowedToggle").addEventListener("click", () => setWindowMode("windowed"));
+    document.getElementById("fullscreenToggle").addEventListener("click", () => setWindowMode("fullscreen"));
+    document.getElementById("fullscreenBtn").addEventListener("click", toggleLauncherFullscreen);
+
+    document.getElementById("resetLauncherBtn").addEventListener("click", () => {
+      if(!confirm("Reset launcher settings and game tracking data?")) return;
+      localStorage.removeItem(DEVICE_MODE_KEY);
+      localStorage.removeItem(WINDOW_MODE_KEY);
+      localStorage.removeItem(GAME_DATA_KEY);
+      localStorage.removeItem(NOTIFICATIONS_KEY);
+      gameData = loadGameData();
+      notifications = loadNotifications();
+      applyDeviceMode();
+      applyWindowMode();
+      syncSettingButtons();
+      refreshAllViews();
+    });
+
+    document.getElementById("searchInput").addEventListener("input", renderLibrary);
+    document.getElementById("sortSelect").addEventListener("change", renderLibrary);
+    document.getElementById("filterSelect").addEventListener("change", renderLibrary);
+
+    // SDK bridge reference
+    window.BluemoonNexus = {
+      init(gameId, config = {}) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({ type: "BNX_GAME_INIT", gameId, config }, "*");
+      },
+      reportAchievements(gameId, unlocked, total) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({ type: "BNX_ACHIEVEMENTS", gameId, unlocked, total }, "*");
+      },
+      unlockAchievement(gameId, achievementId, unlocked, total) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({ type: "BNX_ACHIEVEMENT_UNLOCKED", gameId, achievementId, unlocked, total }, "*");
+      },
+      reportStats(gameId, stats) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({ type: "BNX_STATS", gameId, stats }, "*");
+      },
+      reportSaveState(gameId, hasSave) {
+        if (!window.parent || window.parent === window) return;
+        window.parent.postMessage({ type: "BNX_SAVE_STATE", gameId, hasSave }, "*");
+      }
+    };
+
+    // Manual helpers
+    window.BNXSetAchievements = function(gameId, unlocked, total){
+      const game = getGameData(gameId);
+      game.unlocked = Number(unlocked) || 0;
+      if (typeof total !== "undefined") game.total = Number(total) || game.total;
+      saveGameData();
+      refreshAllViews();
+    };
+
+    window.BNXSetSaveState = function(gameId, hasSave){
+      const game = getGameData(gameId);
+      game.hasSave = !!hasSave;
+      saveGameData();
+      refreshAllViews();
+    };
+
+    window.BNXSetStats = function(gameId, stats){
+      const game = getGameData(gameId);
+      game.stats = { ...(game.stats || {}), ...(stats || {}) };
+      saveGameData();
+      refreshAllViews();
+    };
+
+    applyDeviceMode();
+    applyWindowMode();
+    syncSettingButtons();
+    document.getElementById("homeModeValue").textContent = getWindowMode() === "fullscreen" ? "Fullscreen" : "Windowed";
+    refreshAllViews();
+  </script>
+</body>
+</html>
